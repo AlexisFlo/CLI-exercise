@@ -1,4 +1,6 @@
 use anyhow::{Context, Result};
+use std::fs::File;
+use std::io::{ BufRead, BufReader};
 use clap::Parser;
 
 /// Search for a pattern in a file and display the lines that contain it.
@@ -16,10 +18,13 @@ struct Cli {
 // of read_to_string().)
 fn main() -> Result<()>{
     let args = Cli::parse();
-    let content = std::fs::read_to_string(&args.path)
+    let file = File::open(&args.path)
         .with_context(|| format!("could not rea file `{}`", args.path.display()))?;
 
-    for line in content.lines() {
+    let reader = BufReader::new(file);
+
+    for line in reader.lines() {
+        let line = line?;
         if line.contains(&args.pattern) {
             println!("{}", line);
         }
